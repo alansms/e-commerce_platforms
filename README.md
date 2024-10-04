@@ -54,7 +54,7 @@ Tecnologias Utilizadas
 Como Rodar o Projeto
 
 	1.	Clone o repositório:
-git clone https://github.com/alansms/seu-repositorio.git
+git clone https://github.com/alansms/seu-repositorio.git](https://github.com/alansms/e-commerce_platforms
 
 	2.	Instale as dependências:
 pip install -r requirements.txt
