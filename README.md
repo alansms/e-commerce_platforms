@@ -1,7 +1,3 @@
-# e-commerce_platforms
-
-Sistema de Gestão de Estoque e Vendas
-
 Alan de Souza Maximiano - RM557088
 
 André Rovai Jr - RM555848
@@ -12,7 +8,7 @@ Lancelot Chagas - RM554707
 
 Kauan Alves - RM555082
 
-#Sistema de Gerenciamento de Estoque e Vendas com Flask
+**Sistema de Gerenciamento de Estoque e Vendas com Flask**
 
 Este projeto é uma aplicação web desenvolvida em Flask para gerenciar produtos e vendas. Inclui autenticação de usuários, adição e edição de produtos, venda de produtos com geração de recibos em PDF, e fechamento de caixa. A aplicação utiliza o SQLite como banco de dados e possui uma interface amigável para a gestão de um pequeno estoque. Abaixo estão as principais funcionalidades do sistema:
 
@@ -89,4 +85,3 @@ Estrutura de Diretórios
 ├── instance/
 │   └── produtos.db       # Banco de dados SQLite
 ├── requirements.txt       # Arquivo com dependências do projeto
-
