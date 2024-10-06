@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização de Vendas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Lista de Vendas</h1>
+
+        <!-- Botões de retorno, venda, e fechar caixa -->
+        <div class="mb-4 text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Voltar ao Painel</a>
+            <a href="{{ url_for('vender_produto') }}" class="btn btn-primary">Vender Produto</a>
+            <a href="{{ url_for('produtos') }}" class="btn btn-success">Adicionar Produto</a>
+            <a href="{{ url_for('relatorio_vendas') }}" class="btn btn-info">Relatório de Vendas</a>
+            <!-- Botão para fechar o caixa -->
+            <form method="POST" action="{{ url_for('fechar_caixa') }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger">Fechar Caixa</button>
+            </form>
+        </div>
+
+        <!-- Filtro de Produto -->
+        <form method="GET" action="{{ url_for('vendas') }}" class="mb-4">
+            <div class="form-row justify-content-center">
+                <div class="col-md-4">
+                    <label for="produto">Filtrar por Produto:</label>
+                    <select id="produto" name="produto" class="form-control">
+                        <option value="">Todos os Produtos</option>
+                        {% for produto in produtos %}
+                            <option value="{{ produto.id }}" {% if produto.id == produto_selecionado %}selected{% endif %}>{{ produto.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabela de Vendas -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unitário</th>
+                        <th>Categoria</th>
+                        <th>Marca</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>{{ venda.nome }}</td>
+                        <td>{{ venda.quantidade }}</td>
+                        <td>R$ {{ venda.valor_unitario }}</td>
+                        <td>{{ venda.categoria }}</td>
+                        <td>{{ venda.marca }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="alert alert-info text-center" role="alert">
+            <h2>Total das Vendas: R${{ total }}</h2>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Principal</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Estilos para o botão flutuante com efeito de expansão -->
+    <style>
+        .floating-button {
+            position: fixed;
+            top: 20px; /* Posição na parte superior */
+            right: 20px; /* Posição à direita */
+            background-color: #007bff;
+            color: white;
+            width: 60px; /* Tamanho inicial do círculo */
+            height: 60px; /* Tamanho inicial do círculo */
+            border-radius: 50%; /* Circulo */
+            text-align: center;
+            font-size: 30px;
+            line-height: 60px; /* Centraliza o texto dentro do círculo */
+            z-index: 1000;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease; /* Transição suave para o efeito */
+            overflow: hidden; /* Esconder o conteúdo ao ser recolhido */
+        }
+
+        /* Quando o mouse repousa sobre o botão, ele expande para mostrar o conteúdo */
+        .floating-button:hover {
+            width: 300px; /* Largura expandida */
+            height: auto; /* Altura automática para acomodar o conteúdo */
+            border-radius: 10px; /* Transformar em retângulo com cantos arredondados */
+            padding: 15px; /* Espaçamento interno */
+        }
+
+        /* Estilo do conteúdo (nomes) dentro do botão */
+        .floating-content {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 16px; /* Aumentei um pouco o tamanho da fonte para melhor visualização */
+            text-align: center; /* Centraliza os nomes */
+            margin-top: 10px;
+        }
+
+        /* O conteúdo aparece quando o botão é expandido */
+        .floating-button:hover .floating-content {
+            opacity: 1;
+        }
+
+        /* Lista de nomes organizada e centralizada */
+        ul {
+            padding-left: 0; /* Remove padding padrão da lista */
+            margin: 0; /* Remove a margem padrão */
+        }
+
+        ul li {
+            list-style-type: none; /* Remove marcador da lista */
+            margin-bottom: 2px; /* Diminui ainda mais o espaço entre os itens */
+            display: flex;
+            justify-content: center; /* Centraliza o conteúdo da lista */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Painel Principal</h1>
+        <p class="text-center">Bem-vindo ao sistema de gestão! Escolha uma das opções abaixo para continuar.</p>
+
+        <div class="text-center">
+            <a href="{{ url_for('produtos') }}" class="btn btn-primary m-2">Gestão de Produtos</a>
+            <a href="{{ url_for('vendas') }}" class="btn btn-secondary m-2">Visualização de Vendas</a>
+            <a href="{{ url_for('vender_produto') }}" class="btn btn-primary m-2">Vender Produto</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger m-2">Sair</a>
+        </div>
+    </div>
+
+    <!-- Botão flutuante com os nomes -->
+    <div class="floating-button">
+        +
+        <div class="floating-content">
+            <ul>
+                <li>Nome: Alan Maximiano | RM55708</li>
+                <li>Nome: André Rovai | RM555848</li>
+                <li>Nome: Pedro Henrique | RM554987</li>
+                <li>Nome: Kauan Batista | RM555082</li>
+                <li>Nome: Lancelot Chagas |RM554707</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.amazonaws.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
