@@ -14,6 +14,10 @@
         <div class="mb-4 text-center">
             <a href="{{ url_for('index') }}" class="btn btn-secondary">Voltar ao Painel</a>
         </div>
+        <div class="text-center my-4">
+            <a href="{{ url_for('download_relatorio_vendas') }}" class="btn btn-primary">Baixar Relatório em PDF</a>
+        </div>
+
 
         <!-- Tabela de Vendas -->
         <div class="table-responsive">
@@ -22,19 +26,21 @@
                     <tr>
                         <th>Data da Venda</th>
                         <th>Produto</th>
+                        <th>Cliente</th> <!-- Assumindo que há relacionamento com o usuário -->
                         <th>Quantidade</th>
                         <th>Valor Unitário</th>
                         <th>Total da Venda</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for venda in vendas %}
+                    {% for item in relatorio %}
                     <tr>
-                        <td>{{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
-                        <td>{{ venda.produto.nome }}</td>
-                        <td>{{ venda.quantidade }}</td>
-                        <td>R$ {{ venda.valor_unitario }}</td>
-                        <td>R$ {{ venda.quantidade * venda.valor_unitario }}</td>
+                        <td>{{ item.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ item.produto }}</td>
+                        <td>{{ 'Cliente Exemplo' }}</td> <!-- Ajuste conforme necessária a lógica -->
+                        <td>{{ item.quantidade }}</td>
+                        <td>R$ {{ item.valor_unitario }}</td>
+                        <td>R$ {{ item.total_venda }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -43,7 +49,7 @@
 
         <!-- Total de Vendas -->
         <div class="alert alert-info text-center" role="alert">
-            <h2>Total das Vendas: R$ {{ total_vendas }}</h2>
+            <h2>Total das Vendas: {{ total_vendas }}</h2>
         </div>
     </div>
 

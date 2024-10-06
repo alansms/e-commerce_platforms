@@ -23,7 +23,7 @@ db = SQLAlchemy(app)
 try:
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 except locale.Error:
-    flash('Erro ao configurar o locale. Verifique a configuração do sistema.', 'danger')
+    pass
 
 # Definição dos modelos (classes ORM que representam as tabelas do banco de dados)
 class Produto(db.Model):
@@ -53,6 +53,15 @@ class Sale(db.Model):
     valor_unitario = db.Column(db.Float, nullable=False)
     data_venda = db.Column(db.DateTime, default=db.func.current_timestamp())
     produto = db.relationship('Produto', backref=db.backref('sales', lazy=True))
+
+
+class MovimentacaoEstoque(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
+    tipo_movimentacao = db.Column(db.String(10))  # 'entrada' ou 'saida'
+    quantidade = db.Column(db.Integer, nullable=False)
+    data_movimentacao = db.Column(db.DateTime, default=db.func.current_timestamp())
+    produto = db.relationship('Produto', backref=db.backref('movimentacoes', lazy=True))
 
 
 # Decorador para garantir que o usuário esteja logado
@@ -113,10 +122,6 @@ def register():
 
 # Função para gerar recibo de venda em PDF
 def gerar_recibo(produto_nome, quantidade, valor_unitario):
-    if not produto_nome or quantidade <= 0 or valor_unitario <= 0:
-        flash('Erro na geração do recibo: dados inválidos.', 'danger')
-        return redirect(url_for('vender_produto'))
-
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
     p.drawString(100, 750, "Recibo de Venda")
@@ -146,19 +151,26 @@ def vender_produto():
             valor_com_desconto = produto.valor_unitario * (1 - desconto_manual)
             produto.quantidade -= quantidade_vendida
             db.session.commit()
+            # Registrar a venda
+            nova_venda = Sale(produto_id=produto.id, quantidade=quantidade_vendida, valor_unitario=valor_com_desconto)
+            db.session.add(nova_venda)
+            db.session.commit()
+            # Registrar a movimentação no estoque
+            movimentacao = MovimentacaoEstoque(produto_id=produto.id, tipo_movimentacao='saida', quantidade=quantidade_vendida)
+            db.session.add(movimentacao)
+            db.session.commit()
+
             return gerar_recibo(produto.nome, quantidade_vendida, valor_com_desconto)
         else:
             flash('Quantidade vendida maior que a disponível em estoque.', 'danger')
 
     return render_template('vender_produto.html', produtos=produtos)
 
+
 # Rota para visualizar e adicionar produtos
 @app.route('/produtos', methods=['GET', 'POST'])
 @login_required
 def produtos():
-    """
-    Permite visualizar e adicionar novos produtos ao estoque.
-    """
     if request.method == 'POST':
         nome = request.form['nome']
         codigo = request.form['codigo']
@@ -174,6 +186,12 @@ def produtos():
                                categoria=categoria, marca=marca)
         db.session.add(novo_produto)
         db.session.commit()
+
+        # Registrar a movimentação no estoque
+        movimentacao = MovimentacaoEstoque(produto_id=novo_produto.id, tipo_movimentacao='entrada', quantidade=quantidade)
+        db.session.add(movimentacao)
+        db.session.commit()
+
         flash('Novo produto adicionado com sucesso!', 'success')
 
     produtos = Produto.query.all()
@@ -184,9 +202,6 @@ def produtos():
 @app.route('/editar_produto/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_produto(id):
-    """
-    Permite a edição de um produto existente no estoque.
-    """
     produto = Produto.query.get_or_404(id)
     if request.method == 'POST':
         produto.nome = request.form['nome']
@@ -200,6 +215,12 @@ def editar_produto(id):
         produto.marca = request.form.get('marca', produto.marca)
 
         db.session.commit()
+
+        # Registrar a movimentação no estoque
+        movimentacao = MovimentacaoEstoque(produto_id=produto.id, tipo_movimentacao='entrada', quantidade=produto.quantidade)
+        db.session.add(movimentacao)
+        db.session.commit()
+
         flash(f'Produto {produto.nome} atualizado com sucesso!', 'success')
         return redirect(url_for('produtos'))
 
@@ -210,32 +231,148 @@ def editar_produto(id):
 @app.route('/vendas', methods=['GET'])
 @login_required
 def vendas():
-    """
-    Exibe todas as vendas realizadas.
-    """
-    vendas = Sale.query.all()
-    return render_template('vendas.html', vendas=vendas)
+    produtos = Produto.query.all()
+    produto_selecionado = request.args.get('produto_id')
+
+    if produto_selecionado:
+        vendas_filtradas = Sale.query.filter_by(produto_id=produto_selecionado).all()
+    else:
+        vendas_filtradas = Sale.query.all()
+
+    # Calculando o total de vendas
+    total = sum(venda.quantidade * venda.valor_unitario for venda in vendas_filtradas)
+    total_formatado = locale.currency(total, grouping=True)
+
+    return render_template('vendas-2.html', vendas=vendas_filtradas, total_formatado=total_formatado, produtos=produtos, produto_selecionado=int(produto_selecionado) if produto_selecionado else None)
 
 
 # Rota para gerar relatório de vendas
 @app.route('/relatorio_vendas', methods=['GET'])
 @login_required
 def relatorio_vendas():
-    """
-    Exibe o relatório de vendas com o valor total vendido.
-    """
     vendas = Sale.query.all()
-    total_vendas = sum(venda.quantidade * venda.valor_unitario for venda in vendas)
-    return render_template('relatorio_vendas.html', vendas=vendas, total_vendas=total_vendas)
+    relatorio = []
+    total_vendas = 0
+    for venda in vendas:
+        total_venda = venda.quantidade * venda.valor_unitario
+        total_vendas += total_venda  # Acumulando o total de vendas
+        relatorio.append({
+            'produto': venda.produto.nome,
+            'quantidade': venda.quantidade,
+            'valor_unitario': venda.valor_unitario,
+            'data_venda': venda.data_venda,
+            'total_venda': total_venda
+        })
+
+    total_vendas_formatado = locale.currency(total_vendas, grouping=True)
+
+    return render_template('relatorio_vendas.html', relatorio=relatorio, total_vendas=total_vendas_formatado)
+
+
+    return render_template('relatorio_vendas.html', relatorio=relatorio, total_vendas=total_vendas_formatado)
+
+
+def gerar_pdf_vendas(relatorio, total_vendas):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer)
+
+    # Título
+    p.drawString(100, 750, "Relatório de Vendas")
+
+    # Cabeçalho da tabela
+    y = 720
+    p.drawString(100, y, "Data")
+    p.drawString(200, y, "Produto")
+    p.drawString(300, y, "Quantidade")
+    p.drawString(400, y, "Valor Unitário")
+    p.drawString(500, y, "Total")
+
+    # Conteúdo da tabela
+    y -= 20
+    for item in relatorio:
+        p.drawString(100, y, item['data_venda'].strftime('%d/%m/%Y %H:%M'))
+        p.drawString(200, y, item['produto'])
+        p.drawString(300, y, str(item['quantidade']))
+        p.drawString(400, y, f"R$ {item['valor_unitario']:.2f}")
+        p.drawString(500, y, f"R$ {item['total_venda']:.2f}")
+        y -= 20
+        if y < 50:
+            p.showPage()
+            y = 750
+
+    # Total de Vendas
+    p.drawString(100, y, f"Total das Vendas: {total_vendas}")
+
+    # Finalizar o PDF
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+    return buffer
+
+
+# Rota para gerar relatório de estoque
+@app.route('/relatorio_estoque', methods=['GET'])
+@login_required
+def relatorio_estoque():
+    produtos = Produto.query.all()
+    return render_template('relatorio_estoque.html', produtos=produtos)
+
+
+# Rota para visualizar o histórico de movimentações de estoque
+@app.route('/historico_movimentacoes', methods=['GET'])
+@login_required
+def historico_movimentacoes():
+    movimentacoes = MovimentacaoEstoque.query.all()
+    return render_template('historico_movimentacoes.html', movimentacoes=movimentacoes)
+
+
+@app.route('/download_relatorio_vendas')
+@login_required
+def download_relatorio_vendas():
+    vendas = Sale.query.all()
+    relatorio = []
+    total_vendas = 0
+    for venda in vendas:
+        total_venda = venda.quantidade * venda.valor_unitario
+        total_vendas += total_venda
+        relatorio.append({
+            'produto': venda.produto.nome,
+            'quantidade': venda.quantidade,
+            'valor_unitario': venda.valor_unitario,
+            'data_venda': venda.data_venda,
+            'total_venda': total_venda
+        })
+
+    total_vendas_formatado = locale.currency(total_vendas, grouping=True)
+    pdf_buffer = gerar_pdf_vendas(relatorio, total_vendas_formatado)
+
+    return send_file(pdf_buffer, as_attachment=True, download_name='relatorio_vendas.pdf', mimetype='application/pdf')
+
+
+# Rota para fechar o caixa
+@app.route('/fechar_caixa', methods=['POST'])
+@login_required
+def fechar_caixa():
+    try:
+        # Lógica para fechar o caixa (exemplo: zerar vendas ou atualizar estoque)
+        produtos = Produto.query.all()
+        for produto in produtos:
+            produto.quantidade = 0  # Exemplo de ação ao fechar o caixa (zerar o estoque)
+
+        db.session.commit()
+        flash('Caixa fechado com sucesso! As vendas foram zeradas.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao fechar o caixa: {str(e)}', 'danger')
+
+    return redirect(url_for('vendas'))
 
 
 # Rota para logout
 @app.route('/logout')
 @login_required
 def logout():
-    """
-    Realiza o logout do usuário.
-    """
     session.clear()
     flash('Você saiu com sucesso.', 'success')
     return redirect(url_for('login'))
@@ -245,9 +382,6 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    """
-    Redireciona para a página inicial (dashboard).
-    """
     return render_template('index.html')
 
 
