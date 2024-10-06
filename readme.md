@@ -71,10 +71,11 @@ python app.py
 
 Acesse a aplicação em http://localhost:9081.
 
-Estrutura de Diretórios
+# Estrutura de Diretórios
 
-├── app.py                # Arquivo principal com a aplicação Flask
-├── templates/            # Diretório contendo os templates HTML
+```plaintext
+├── app.py                     # Arquivo principal com a aplicação Flask
+├── templates/                 # Diretório contendo os templates HTML
 │   ├── login.html
 │   ├── register.html
 │   ├── vender_produto.html
@@ -82,6 +83,6 @@ Estrutura de Diretórios
 │   ├── editar_produto.html
 │   ├── vendas-2.html
 │   └── index.html
-├── instance/
-│   └── produtos.db       # Banco de dados SQLite
-├── requirements.txt       # Arquivo com dependências do projeto
+├── instance/ 
+│   └── produtos.db            # Banco de dados SQLite
+└── requirements.txt           # Arquivo com dependências do projeto
