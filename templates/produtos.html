@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            color: white;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 16px;
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #dee2e6;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        /* Estilo para alerta de estoque baixo */
+        .estoque-baixo {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .alert {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <a href="/vendas" class="btn-secondary">Visualização de Vendas</a>
+            <a href="/vender_produto" class="btn-primary">Vender Produto</a>
+            <a href="/logout" class="btn-danger">Sair</a>
+        </div>
+
+        <h1>Gestão de Produtos</h1>
+
+        <!-- Formulário para Adicionar Produto -->
+        <form method="POST" action="/produtos">
+            <h2>Adicionar Novo Produto</h2>
+
+            <label for="nome">Nome do Produto:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="codigo">Código do Produto:</label>
+            <input type="text" id="codigo" name="codigo" required>
+
+            <label for="quantidade">Quantidade:</label>
+            <input type="number" id="quantidade" name="quantidade" required>
+
+            <label for="preco">Valor Unitário:</label>
+            <input type="text" id="preco" name="preco" required>
+
+            <label for="categoria">Categoria:</label>
+            <input type="text" id="categoria" name="categoria">
+
+            <label for="marca">Marca:</label>
+            <input type="text" id="marca" name="marca">
+
+            <label for="estoque_minimo">Estoque Mínimo (Alarme de Estoque):</label>
+            <input type="number" id="estoque_minimo" name="estoque_minimo" required>
+
+            <input type="submit" value="Adicionar Produto">
+        </form>
+
+        <!-- Tabela para Listagem de Produtos -->
+        <div class="table-container">
+            <h2>Lista de Produtos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Código</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unitário</th>
+                        <th>Categoria</th>
+                        <th>Marca</th>
+                        <th>Estoque Mínimo</th>
+                        <th>Status</th>
+                        <th>Ações</th> <!-- Adicionando a coluna Ações -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr>
+                        <td>{{ produto.nome }}</td>
+                        <td>{{ produto.codigo }}</td>
+                        <td>{{ produto.quantidade }}</td>
+                        <td>R$ {{ produto.valor_unitario }}</td>
+                        <td>{{ produto.categoria }}</td>
+                        <td>{{ produto.marca }}</td>
+                        <td>{{ produto.estoque_minimo }}</td>
+                        <td>
+                            {% if produto.quantidade < produto.estoque_minimo %}
+                            <span class="estoque-baixo">Estoque Baixo!</span>
+                            {% else %}
+                            Em Estoque
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/editar_produto/{{ produto.id }}" class="btn btn-warning btn-sm">Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

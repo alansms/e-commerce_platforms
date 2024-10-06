@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Principal</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Estilos para o menu flutuante -->
+    <style>
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            text-align: center;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        .form-popup {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            border: 3px solid #f1f1f1;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            z-index: 1000;
+        }
+
+        .form-popup input[type="text"], .form-popup button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .form-popup button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        .form-popup button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Painel Principal</h1>
+        <p class="text-center">Bem-vindo ao sistema de gestão! Escolha uma das opções abaixo para continuar.</p>
+
+        <div class="text-center">
+            <a href="{{ url_for('produtos') }}" class="btn btn-primary m-2">Gestão de Produtos</a>
+            <a href="{{ url_for('vendas') }}" class="btn btn-secondary m-2">Visualização de Vendas</a>
+            <a href="{{ url_for('vender_produto') }}" class="btn btn-primary m-2">Vender Produto</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger m-2">Sair</a>
+        </div>
+    </div>
+
+    <!-- Menu flutuante -->
+    <div class="floating-menu" onclick="toggleForm()">
+        +
+    </div>
+
+    <!-- Formulário flutuante -->
+    <div class="form-popup" id="formPopup">
+        <form method="POST" action="{{ url_for('adicionar_responsavel') }}">
+            <label for="nome">Nome do Responsável:</label>
+            <input type="text" name="nome" id="nome" placeholder="Digite o nome" required>
+            <button type="submit">Adicionar Responsável</button>
+            <button type="button" onclick="toggleForm()">Fechar</button>
+        </form>
+    </div>
+
+    <!-- JavaScript para abrir e fechar o formulário -->
+    <script>
+        function toggleForm() {
+            var formPopup = document.getElementById("formPopup");
+            if (formPopup.style.display === "block") {
+                formPopup.style.display = "none";
+            } else {
+                formPopup.style.display = "block";
+            }
+        }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
